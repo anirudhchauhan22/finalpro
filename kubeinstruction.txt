@@ -1,0 +1,39 @@
+Deploying a Web Application on AWS EKS with Fargate, Ingress, and ALB
+Overview
+This documentation provides a step-by-step guide to deploying a web application on an Amazon EKS cluster using AWS Fargate. The deployment includes an Ingress resource managed by the AWS Load Balancer Controller to expose the application externally. The example application used in this setup is the 2048 game.
+Architecture Overview
+Components Used
+1.	Amazon EKS - Managed Kubernetes cluster for containerized applications.
+2.	AWS Fargate - Serverless compute engine for running containers without managing EC2 instances.
+3.	Kubernetes Ingress - Manages external access to services within the cluster.
+4.	AWS Load Balancer Controller - Provisions and manages an ALB based on Ingress resources.
+5.	Application Deployment - Includes Kubernetes Deployment, Service, and Ingress configuration.
+________________________________________
+Step-by-Step Deployment
+Step 1: Create an EKS Cluster
+To create an EKS cluster, use eksctl:
+eksctl create cluster --name demo-cluster --region us-east-1 --fargate
+This command:
+•	Creates an EKS cluster named demo-cluster.
+•	Uses AWS Fargate for compute, eliminating the need to manage EC2 instances.
+________________________________________
+Step 2: Create a Fargate Profile
+Create a Fargate profile to ensure that pods in a specific namespace are scheduled on AWS Fargate.
+eksctl create fargateprofile \
+    --cluster demo-cluster \
+    --region us-east-1 \
+    --name alb-sample-app \
+    --namespace game-2048
+•	The game-2048 namespace will now run pods on Fargate.
+________________________________________
+Step 3: Deploy the Application, Service, and Ingress
+Apply the provided Kubernetes manifest to deploy the application along with a Service and Ingress resource.
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/examples/2048/2048_full.yaml
+•	Deployment: Creates pods running the 2048 game.
+•	Service: Exposes the pods within the cluster.
+•	Ingress: Routes external traffic through an ALB.
+________________________________________
+Step 4: Verify the Ingress and ALB
+Check the Ingress resource to get the ALB URL:
+kubectl get ingress -n game-2048
+Copy the ALB hostname and open it in a web browser to access the 2048 game.
